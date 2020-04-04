@@ -4,7 +4,8 @@
   "description": "",
   "main": ".eslintrc.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "synth": "cdk synth",
+    "deploy": "yarn synth && cdk deploy"
   },
   "repository": {
     "type": "git",

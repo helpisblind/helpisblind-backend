@@ -1,7 +1,8 @@
 const cdk = require('@aws-cdk/core')
 const s3 = require('@aws-cdk/aws-s3')
-const lambda = require('@aws-cdk/aws-lambda')
 const ssm = require('@aws-cdk/aws-secretsmanager')
+
+const { Lambda } = require('./presets/lambda')
 
 class AppStack extends cdk.Stack {
   constructor(scope, id, props) {
@@ -9,7 +10,7 @@ class AppStack extends cdk.Stack {
 
     const MONGO_SECRET_NAME = 'MONGO_SECRETS'
 
-    const mongoSecrets = new ssm.Secret(this, 'mongoSecrets', {
+    const mongoSecret = new ssm.Secret(this, 'mongoSecrets', {
       secretName: MONGO_SECRET_NAME,
       description: 'mongodb authentication credentials',
       generateSecretString: {
@@ -22,31 +23,17 @@ class AppStack extends cdk.Stack {
       },
     })
 
-    const addPledge = new lambda.Function(this, 'addPledge', {
-      description: 'Add pledge to the database',
-      runtime: lambda.Runtime.NODEJS_12_X,
-      code: lambda.Code.asset('./src/addPledge'),
-      handler: 'index.add',
-      environment: {
-        MONGO_SECRET_NAME,
-      },
-      tracing: lambda.Tracing.ACTIVE,
-      timeout: cdk.Duration.seconds(60),
+    new Lambda(this, 'addPledge', {
+      mongoSecret,
+      mongoSecretName: MONGO_SECRET_NAME,
+      code: './src/addPledge',
     })
-    mongoSecrets.grantRead(addPledge)
 
-    const addDonation = new lambda.Function(this, 'addDonation', {
-      description: 'Add pledge to the database',
-      runtime: lambda.Runtime.NODEJS_12_X,
-      code: lambda.Code.asset('./src/addDonation'),
-      handler: 'index.add',
-      environment: {
-        MONGO_SECRET_NAME,
-      },
-      tracing: lambda.Tracing.ACTIVE,
-      timeout: cdk.Duration.seconds(60),
+    new Lambda(this, 'addDonation', {
+      mongoSecret,
+      mongoSecretName: MONGO_SECRET_NAME,
+      code: './src/addDonation',
     })
-    mongoSecrets.grantRead(addDonation)
 
     const hostBucket = new s3.Bucket(this, 'hostBucket', {
       bucketName: 'helpisblind-host',

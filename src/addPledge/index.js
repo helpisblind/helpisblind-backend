@@ -25,12 +25,12 @@ const getDbUrl = async () => {
 
 const pledgeSchema = new mongoose.Schema(
   {
+    swish: { type: String, unique: true },
     message: String,
     goal: Number,
-    expiryAt: Date,
     email: String,
-    // TODO: encrypt
-    code: String,
+    expirationDate: Date,
+    securityCode: String,
   },
   { autoIndex: false }
 )
@@ -40,9 +40,8 @@ const Pledge = mongoose.model('Pledge', pledgeSchema)
 let db = null
 
 exports.addPledge = async (event) => {
-  // TODO: gerar code
   const {
-    body: { message, goal, expiryAt, email, code },
+    body: { swish, message, goal, email, expirationDate, securityCode },
   } = event
 
   if (!db) {
@@ -58,5 +57,5 @@ exports.addPledge = async (event) => {
     }
   }
 
-  await new Pledge({ message, goal, expiryAt, email, code }).save()
+  await new Pledge({ swish, message, goal, email, expirationDate, securityCode }).save()
 }
