@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/helpisblind/helpisblind-backend#readme",
   "dependencies": {
+    "@aws-cdk/aws-apigateway": "^1.31.0",
     "@aws-cdk/aws-lambda": "^1.31.0",
     "@aws-cdk/aws-s3": "^1.31.0",
     "@aws-cdk/aws-secretsmanager": "^1.31.0",

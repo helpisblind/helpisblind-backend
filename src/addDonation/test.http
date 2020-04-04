@@ -1,0 +1,14 @@
+@host = https://apo5qz5j6i.execute-api.eu-west-1.amazonaws.com/prod
+###
+
+# @name postAddDonation
+
+POST {{host}}/pledge HTTP/1.1
+Content-Type: application/json
+
+{
+  "pledgeId": "cd99cc4a-3a73-4369-b5b1-ecac698a7384",
+  "message": "hepl",
+  "amount": 123,
+}
+

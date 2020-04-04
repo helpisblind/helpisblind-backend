@@ -1,6 +1,7 @@
 const cdk = require('@aws-cdk/core')
 const s3 = require('@aws-cdk/aws-s3')
-const ssm = require('@aws-cdk/aws-secretsmanager')
+const apigateway = require('@aws-cdk/aws-apigateway')
+const secretsmanager = require('@aws-cdk/aws-secretsmanager')
 
 const { Lambda } = require('./presets/lambda')
 
@@ -10,7 +11,7 @@ class AppStack extends cdk.Stack {
 
     const MONGO_SECRET_NAME = 'MONGO_SECRETS'
 
-    const mongoSecret = new ssm.Secret(this, 'mongoSecrets', {
+    const mongoSecret = new secretsmanager.Secret(this, 'mongoSecrets', {
       secretName: MONGO_SECRET_NAME,
       description: 'mongodb authentication credentials',
       generateSecretString: {
@@ -23,17 +24,32 @@ class AppStack extends cdk.Stack {
       },
     })
 
-    new Lambda(this, 'addPledge', {
+    const api = new apigateway.RestApi(this, 'helpisblind-api', {})
+
+    const addPledge = new Lambda(this, 'addPledge', {
       mongoSecret,
       mongoSecretName: MONGO_SECRET_NAME,
-      code: './src/addPledge',
+      code: './src/pledge/add',
     })
 
-    new Lambda(this, 'addDonation', {
+    const getRandomPledge = new Lambda(this, 'getRandomPledge', {
+      mongoSecret,
+      mongoSecretName: MONGO_SECRET_NAME,
+      code: './src/pledge/getRandom',
+    })
+
+    const pledge = api.root.addResource('pledge')
+    pledge.addMethod('POST', new apigateway.LambdaIntegration(addPledge))
+    pledge.addMethod('GET', new apigateway.LambdaIntegration(getRandomPledge))
+
+    const addDonation = new Lambda(this, 'addDonation', {
       mongoSecret,
       mongoSecretName: MONGO_SECRET_NAME,
       code: './src/addDonation',
     })
+
+    const donation = api.root.addResource('donation')
+    donation.addMethod('POST', new apigateway.LambdaIntegration(addDonation))
 
     const hostBucket = new s3.Bucket(this, 'hostBucket', {
       bucketName: 'helpisblind-host',

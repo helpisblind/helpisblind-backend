@@ -6,7 +6,9 @@ const { MONGO_SECRET_NAME } = process.env
 const ssm = new SecretsManager()
 mongoose.set('useFindAndModify', false)
 
-const getDbUrl = async () => {
+let mongo = null
+
+const getMongoURL = async () => {
   let secrets
 
   const encryptedSecretValue = await ssm.getSecretValue({ SecretId: MONGO_SECRET_NAME }).promise()
@@ -23,6 +25,26 @@ const getDbUrl = async () => {
   return `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_URL}`
 }
 
+const getMongoConnection = async () => {
+  if (!mongo) {
+    try {
+      const mongoURL = await getMongoURL()
+
+      const { connection } = await mongoose.connect(mongoURL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      })
+
+      mongo = connection
+    } catch (error) {
+      console.error(error)
+      return {
+        statusCode: 500,
+      }
+    }
+  }
+}
+
 const pledgeSchema = new mongoose.Schema(
   {
     swish: { type: String, unique: true },
@@ -30,32 +52,24 @@ const pledgeSchema = new mongoose.Schema(
     goal: Number,
     email: String,
     expirationDate: Date,
-    securityCode: String,
+    pin: String,
   },
   { autoIndex: false }
 )
 
 const Pledge = mongoose.model('Pledge', pledgeSchema)
 
-let db = null
+exports.getRandomPledge = async () => {
+  await getMongoConnection()
 
-exports.addPledge = async (event) => {
-  const {
-    body: { swish, message, goal, email, expirationDate, securityCode },
-  } = event
+  const random = await Pledge.count().exec((error, count) => {
+    return Math.floor(Math.random() * count)
+  })
 
-  if (!db) {
-    try {
-      const dbUrl = await getDbUrl()
-      const { connection } = await mongoose.connect(dbUrl, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      })
-      db = connection
-    } catch (error) {
-      return console.error(error)
-    }
+  const pledge = await Pledge.findOne().skip(random)
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(pledge),
   }
-
-  await new Pledge({ swish, message, goal, email, expirationDate, securityCode }).save()
 }

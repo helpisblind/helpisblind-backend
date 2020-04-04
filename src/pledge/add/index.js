@@ -6,7 +6,9 @@ const { MONGO_SECRET_NAME } = process.env
 const ssm = new SecretsManager()
 mongoose.set('useFindAndModify', false)
 
-const getDbUrl = async () => {
+let mongo = null
+
+const getMongoURL = async () => {
   let secrets
 
   const encryptedSecretValue = await ssm.getSecretValue({ SecretId: MONGO_SECRET_NAME }).promise()
@@ -23,32 +25,17 @@ const getDbUrl = async () => {
   return `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_URL}`
 }
 
-const donationSchema = new mongoose.Schema(
-  {
-    pledgeId: String,
-    message: String,
-    amount: Number,
-  },
-  { autoIndex: false }
-)
-
-const Donation = mongoose.model('Donation', donationSchema)
-
-let db = null
-
-exports.addDonation = async (event) => {
-  const {
-    body: { pledgeId, message, amount },
-  } = event
-
-  if (!db) {
+const getMongoConnection = async () => {
+  if (!mongo) {
     try {
-      const dbUrl = await getDbUrl()
-      const { connection } = await mongoose.connect(dbUrl, {
+      const mongoURL = await getMongoURL()
+
+      const { connection } = await mongoose.connect(mongoURL, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       })
-      db = connection
+
+      mongo = connection
     } catch (error) {
       console.error(error)
       return {
@@ -56,11 +43,36 @@ exports.addDonation = async (event) => {
       }
     }
   }
+}
 
-  const donation = await new Donation({ pledgeId, message, amount }).save()
+const pledgeSchema = new mongoose.Schema(
+  {
+    swish: { type: String, unique: true },
+    message: String,
+    goal: Number,
+    email: String,
+    expirationDate: Date,
+    pin: String,
+  },
+  { autoIndex: false }
+)
+
+const Pledge = mongoose.model('Pledge', pledgeSchema)
+
+exports.addPledge = async (event) => {
+  const {
+    body: { swish, message, goal, email, pin },
+  } = event
+
+  await getMongoConnection()
+
+  const now = Date.now()
+  const expirationDate = new Date(now.setMonth(now.getMonth() + 1))
+
+  const pledge = await new Pledge({ swish, message, goal, email, expirationDate, pin }).save()
 
   return {
     statusCode: 201,
-    body: JSON.stringify(donation),
+    body: JSON.stringify(pledge),
   }
 }
