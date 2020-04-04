@@ -1,0 +1,5 @@
+ts.out/*
+cdk.out/*
+dist/*
+**/*/node_modules/*
+**/*/hotfix/*
