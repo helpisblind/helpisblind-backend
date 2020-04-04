@@ -1,0 +1,15 @@
+@host = https://4jof3sttoj.execute-api.eu-west-1.amazonaws.com/prod
+###
+
+# @name postAddDonation
+
+POST {{host}}/donations HTTP/1.1
+Content-Type: application/json
+
+{
+  "fundraiserSwish": "swish 1",
+  "donatorSwish": "swish 2",
+  "message": "super message",
+  "amount": 123,
+}
+

@@ -6,7 +6,9 @@ const { MONGO_SECRET_NAME } = process.env
 const ssm = new SecretsManager()
 mongoose.set('useFindAndModify', false)
 
-const getDbUrl = async () => {
+let mongo = null
+
+const getMongoURL = async () => {
   let secrets
 
   const encryptedSecretValue = await ssm.getSecretValue({ SecretId: MONGO_SECRET_NAME }).promise()
@@ -23,9 +25,30 @@ const getDbUrl = async () => {
   return `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_URL}`
 }
 
+const getMongoConnection = async () => {
+  if (!mongo) {
+    try {
+      const mongoURL = await getMongoURL()
+
+      const { connection } = await mongoose.connect(mongoURL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      })
+
+      mongo = connection
+    } catch (error) {
+      console.error(error)
+      return {
+        statusCode: 500,
+      }
+    }
+  }
+}
+
 const donationSchema = new mongoose.Schema(
   {
-    pledgeId: String,
+    fundraiserSwish: String,
+    donatorSwish: String,
     message: String,
     amount: Number,
   },
@@ -34,30 +57,14 @@ const donationSchema = new mongoose.Schema(
 
 const Donation = mongoose.model('Donation', donationSchema)
 
-let db = null
-
 exports.addDonation = async (event) => {
   const {
-    body: { pledgeId, message, amount },
+    body: { fundraiserSwish, donatorSwish, message, amount },
   } = event
 
-  if (!db) {
-    try {
-      const dbUrl = await getDbUrl()
-      const { connection } = await mongoose.connect(dbUrl, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      })
-      db = connection
-    } catch (error) {
-      console.error(error)
-      return {
-        statusCode: 500,
-      }
-    }
-  }
+  await getMongoConnection()
 
-  const donation = await new Donation({ pledgeId, message, amount }).save()
+  const donation = await new Donation({ fundraiserSwish, donatorSwish, message, amount }).save()
 
   return {
     statusCode: 201,

@@ -1,9 +1,10 @@
 {
-  "name": "@helpisblind/add",
+  "name": "@donations/add",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "install:packages": "yarn",
     "start": "node index.js"
   },
   "author": "",

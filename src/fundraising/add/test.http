@@ -1,0 +1,17 @@
+@host = https://4jof3sttoj.execute-api.eu-west-1.amazonaws.com/prod/
+###
+
+# @name postAddFundraising
+
+POST {{host}}/fundraisings HTTP/1.1
+Content-Type: application/json
+
+{
+  "fundraiserSwish": "swish 123",
+  "story": "mimimimimimimi",
+  "goal": 10,
+  "email": "lari@lari.com",
+  "pin": 1234,
+  "expirationDate": 1588632459751,
+}
+

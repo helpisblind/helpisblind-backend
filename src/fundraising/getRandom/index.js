@@ -45,34 +45,31 @@ const getMongoConnection = async () => {
   }
 }
 
-const pledgeSchema = new mongoose.Schema(
+const fundraisingSchema = new mongoose.Schema(
   {
-    swish: { type: String, unique: true },
-    message: String,
+    fundraiserSwish: { type: String, unique: true },
+    story: String,
     goal: Number,
     email: String,
-    expirationDate: Date,
     pin: String,
+    expirationDate: Date,
   },
   { autoIndex: false }
 )
 
-const Pledge = mongoose.model('Pledge', pledgeSchema)
+const Fundraising = mongoose.model('Fundraising', fundraisingSchema)
 
-exports.addPledge = async (event) => {
-  const {
-    body: { swish, message, goal, email, pin },
-  } = event
-
+exports.getRandomFundraising = async () => {
   await getMongoConnection()
 
-  const now = Date.now()
-  const expirationDate = new Date(now.setMonth(now.getMonth() + 1))
+  const random = await Fundraising.count().exec((error, count) => {
+    return Math.floor(Math.random() * count)
+  })
 
-  const pledge = await new Pledge({ swish, message, goal, email, expirationDate, pin }).save()
+  const fundraising = await Fundraising.findOne().skip(random)
 
   return {
-    statusCode: 201,
-    body: JSON.stringify(pledge),
+    statusCode: 200,
+    body: JSON.stringify(fundraising),
   }
 }
