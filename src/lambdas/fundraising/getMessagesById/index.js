@@ -61,26 +61,12 @@ const donationSchema = new mongoose.Schema(
 
 const Donation = mongoose.model('Donation', donationSchema)
 
-const fundraisingSchema = new mongoose.Schema(
-  {
-    fundraiserSwish: { type: String, unique: true },
-    story: { type: String, required: '{PATH} is required!' },
-    goal: { type: Number, required: '{PATH} is required!' },
-    email: { type: String, required: '{PATH} is required!' },
-    expirationDate: { type: Date, required: '{PATH} is required!' },
-  },
-  { autoIndex: false }
-)
-
-const Fundraising = mongoose.model('Fundraising', fundraisingSchema)
-
-exports.getMessagesById = async (event) => {
+exports.getFundraisingMessagesById = async (event) => {
   const { id } = event.pathParameters
 
   await getMongoConnection()
 
-  const fundraising = await Fundraising.findById(id)
-  const messages = await Donation.find({ fundraisingId: fundraising._id }, 'message')
+  const messages = await Donation.find({ fundraisingId: id }, 'message').lean()
 
   return {
     statusCode: 200,
