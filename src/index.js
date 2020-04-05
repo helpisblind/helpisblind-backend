@@ -27,6 +27,15 @@ class AppStack extends cdk.Stack {
       },
     })
 
+    const hostBucket = new s3.Bucket(this, 'hostBucket', {
+      bucketName: 'helpisblind-host',
+      websiteIndexDocument: 'index.html',
+      websiteErrorDocument: 'index.html',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    })
+
+    hostBucket.grantPublicAccess('*', 's3:GetObject')
+
     const api = new apigateway.RestApi(this, 'helpisblind-api', {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
@@ -41,27 +50,31 @@ class AppStack extends cdk.Stack {
     const certificate = certificatemanager.Certificate.fromCertificateArn(
       this,
       'Certificate',
-      // 'arn:aws:acm:eu-west-1:072324662457:certificate/c70f1fda-b927-49b7-8fc6-60e2f7b8c53a'
-      'arn:aws:acm:eu-west-1:072324662457:certificate/1f12f649-a59e-47ad-8cb0-7d4d78b0b4a4'
+      'arn:aws:acm:eu-west-1:072324662457:certificate/c70f1fda-b927-49b7-8fc6-60e2f7b8c53a'
     )
 
-    const domain = new apigateway.DomainName(this, 'domain', {
+    const apiDomain = new apigateway.DomainName(this, 'domain', {
       certificate,
-      // domainName: 'api.helpisblind.se',
-      domainName: 'max.sousa.cloud',
+      domainName: 'api.helpisblind.se',
       mapping: api,
       securityPolicy: apigateway.SecurityPolicy.TLS_1_2,
     })
 
-    // const hostedZone = route53.HostedZone.fromLookup(this, 'hostedZone', {
-    //   domainName: 'helpisblind.se',
-    // })
+    const hostedZone = route53.HostedZone.fromLookup(this, 'hostedZone', {
+      domainName: 'helpisblind.se',
+    })
 
-    // new route53.ARecord(this, 'AliasRecord', {
-    //   zone: hostedZone,
-    //   target: route53.RecordTarget.fromAlias(new route53Targets.ApiGatewayDomain(domain)),
-    //   recordName: 'api',
-    // })
+    new route53.ARecord(this, 'AliasRecord', {
+      zone: hostedZone,
+      target: route53.RecordTarget.fromAlias(new route53Targets.ApiGatewayDomain(apiDomain)),
+      recordName: 'api',
+    })
+
+    new route53.CnameRecord(this, 'CNAMERecord', {
+      zone: hostedZone,
+      recordName: 'app',
+      domainName: hostBucket.bucketWebsiteUrl,
+    })
     // END ROUTE53 DEFINITIONS
     // =======================================================================
 
@@ -118,15 +131,6 @@ class AppStack extends cdk.Stack {
     donation.addMethod('GET', new apigateway.LambdaIntegration(getDonationById))
     // END FUNDRAISING DEFINITIONS
     // =======================================================================
-
-    const hostBucket = new s3.Bucket(this, 'hostBucket', {
-      bucketName: 'helpisblind-host',
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html',
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-    })
-
-    hostBucket.grantPublicAccess('*', 's3:GetObject')
   }
 }
 

@@ -76,13 +76,15 @@ const fundraisingSchema = new mongoose.Schema(
 const Fundraising = mongoose.model('Fundraising', fundraisingSchema)
 
 exports.getRandomFundraising = async () => {
-
   await getMongoConnection()
 
   const fundraisings = await Fundraising.find().lean()
   const selectedFundraising = fundraisings[Math.floor(Math.random() * fundraisings.length)]
 
-  const donationsAmount = await Donation.find({ fundraisingId: selectedFundraising._id }, 'amount').lean()
+  const donationsAmount = await Donation.find(
+    { fundraisingId: selectedFundraising._id },
+    'amount'
+  ).lean()
 
   const amountRaised = donationsAmount.reduce((totalRaised, donation) => {
     return totalRaised + donation.amount
@@ -94,6 +96,6 @@ exports.getRandomFundraising = async () => {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify({...selectedFundraising, amountRaised}),
+    body: JSON.stringify({ ...selectedFundraising, amountRaised }),
   }
 }

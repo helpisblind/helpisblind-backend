@@ -1,4 +1,5 @@
 module.exports = {
+  parser: 'babel-eslint',
   plugins: ['prettier', 'react'],
   root: true,
   extends: ['eslint:recommended', 'prettier', 'plugin:prettier/recommended'],
