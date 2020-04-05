@@ -30,7 +30,8 @@ class AppStack extends cdk.Stack {
     const api = new apigateway.RestApi(this, 'helpisblind-api', {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: ['*'],
       },
     })
 
@@ -89,7 +90,10 @@ class AppStack extends cdk.Stack {
     fundraisings.addMethod('GET', new apigateway.LambdaIntegration(getRandomFundraising))
 
     const fundraisingMessages = fundraisings.addResource('messages').addResource('{id}')
-    fundraisingMessages.addMethod('GET', new apigateway.LambdaIntegration(getFundraisingMessagesById))
+    fundraisingMessages.addMethod(
+      'GET',
+      new apigateway.LambdaIntegration(getFundraisingMessagesById)
+    )
     // END FUNDRAISING DEFINITIONS
     // =======================================================================
 
