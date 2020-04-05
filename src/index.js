@@ -78,9 +78,18 @@ class AppStack extends cdk.Stack {
       code: './src/lambdas/fundraising/getRandom',
     })
 
-    const fundraising = api.root.addResource('fundraisings')
-    fundraising.addMethod('POST', new apigateway.LambdaIntegration(addFundraising))
-    fundraising.addMethod('GET', new apigateway.LambdaIntegration(getRandomFundraising))
+    const getFundraisingMessagesById = new Lambda(this, 'getFundraisingMessagesById', {
+      mongoSecret,
+      mongoSecretName: MONGO_SECRET_NAME,
+      code: './src/lambdas/fundraising/getMessagesById',
+    })
+
+    const fundraisings = api.root.addResource('fundraisings')
+    fundraisings.addMethod('POST', new apigateway.LambdaIntegration(addFundraising))
+    fundraisings.addMethod('GET', new apigateway.LambdaIntegration(getRandomFundraising))
+
+    const fundraisingMessages = fundraisings.addResource('messages').addResource('{id}')
+    fundraisingMessages.addMethod('GET', new apigateway.LambdaIntegration(getFundraisingMessagesById))
     // END FUNDRAISING DEFINITIONS
     // =======================================================================
 

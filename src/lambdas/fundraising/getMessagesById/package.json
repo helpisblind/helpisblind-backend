@@ -1,0 +1,16 @@
+{
+  "name": "@fundraisings/getmessagesbyid",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "install:packages": "yarn",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.653.0",
+    "mongoose": "^5.9.7"
+  }
+}
