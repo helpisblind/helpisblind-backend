@@ -11,6 +11,6 @@ Content-Type: application/json
   "fundraisingId": "{{fundraisingId}}",
   "donatorSwish": "5556667788",
   "message": "I hope you get back on your feet...",
-  "amount": 100,
+  "amount": 100
 }
 
