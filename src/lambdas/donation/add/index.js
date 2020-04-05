@@ -61,12 +61,34 @@ const donationSchema = new mongoose.Schema(
 
 const Donation = mongoose.model('Donation', donationSchema)
 
+const fundraisingSchema = new mongoose.Schema(
+  {
+    fundraiserSwish: { type: String, unique: true },
+    story: { type: String, required: '{PATH} is required!' },
+    goal: { type: Number, required: '{PATH} is required!' },
+    email: { type: String, required: '{PATH} is required!' },
+    pin: { type: String, required: '{PATH} is required!' },
+    expirationDate: { type: Date, required: '{PATH} is required!' },
+  },
+  { autoIndex: false }
+)
+
+const Fundraising = mongoose.model('Fundraising', fundraisingSchema)
+
 exports.addDonation = async (event) => {
-  const { fundraisingId, fundraiserSwish, donatorSwish, message, amount } = JSON.parse(event.body)
+  const { fundraisingId, donatorSwish, message, amount } = JSON.parse(event.body)
 
   await getMongoConnection()
 
-  const donation = await Donation.create({ fundraisingId, fundraiserSwish, donatorSwish, message, amount })
+  const { fundraiserSwish } = await Fundraising.findById(fundraisingId)
+
+  const donation = await Donation.create({
+    fundraisingId,
+    fundraiserSwish,
+    donatorSwish,
+    message,
+    amount
+  })
 
   return {
     statusCode: 201,
