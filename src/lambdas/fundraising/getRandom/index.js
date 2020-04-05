@@ -49,6 +49,19 @@ const getMongoConnection = async () => {
   }
 }
 
+const donationSchema = new mongoose.Schema(
+  {
+    fundraisingId: { type: mongoose.Types.ObjectId, required: '{PATH} is required!' },
+    fundraiserSwish: { type: String, required: '{PATH} is required!' },
+    donatorSwish: { type: String, required: '{PATH} is required!' },
+    message: { type: String, required: false },
+    amount: { type: Number, required: '{PATH} is required!' },
+  },
+  { autoIndex: false }
+)
+
+const Donation = mongoose.model('Donation', donationSchema)
+
 const fundraisingSchema = new mongoose.Schema(
   {
     fundraiserSwish: { type: String, unique: true },
@@ -63,14 +76,19 @@ const fundraisingSchema = new mongoose.Schema(
 const Fundraising = mongoose.model('Fundraising', fundraisingSchema)
 
 exports.getRandomFundraising = async () => {
-  
+
   await getMongoConnection()
 
   const random = await Fundraising.count().exec((error, count) => {
     return Math.floor(Math.random() * count)
   })
 
-  const fundraising = await Fundraising.findOne().skip(random)
+  const fundraising = await Fundraising.findOne().skip(random).lean()
+  const donationsAmount = await Donation.find({ fundraisingId: fundraising._id }, 'amount').lean()
+
+  const amountRaised = donationsAmount.reduce((totalRaised, nextAmount) => {
+    return totalRaised + nextAmount;
+  });
 
   return {
     statusCode: 200,
@@ -78,6 +96,6 @@ exports.getRandomFundraising = async () => {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
     },
-    body: JSON.stringify(fundraising),
+    body: JSON.stringify({...fundraising, amountRaised}),
   }
 }
