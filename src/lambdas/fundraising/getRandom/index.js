@@ -88,7 +88,7 @@ exports.getRandomFundraising = async () => {
 
   const amountRaised = donationsAmount.reduce((totalRaised, donation) => {
     return totalRaised + donation.amount
-  })
+  }, 0)
 
   return {
     statusCode: 200,
