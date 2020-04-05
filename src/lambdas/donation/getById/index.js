@@ -50,10 +50,11 @@ const getMongoConnection = async () => {
 
 const donationSchema = new mongoose.Schema(
   {
-    fundraiserSwish: String,
-    donatorSwish: String,
-    message: String,
-    amount: Number,
+    fundraisingId: { type: mongoose.Types.ObjectId, required: '{PATH} is required!' },
+    fundraiserSwish: { type: String, required: '{PATH} is required!' },
+    donatorSwish: { type: String, required: '{PATH} is required!' },
+    message: { type: String, required: false },
+    amount: { type: Number, required: '{PATH} is required!' },
   },
   { autoIndex: false }
 )
