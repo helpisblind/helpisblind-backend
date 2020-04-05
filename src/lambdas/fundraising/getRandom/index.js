@@ -40,34 +40,44 @@ const getMongoConnection = async () => {
       console.error(error)
       return {
         statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
       }
     }
   }
 }
 
-const donationSchema = new mongoose.Schema(
+const fundraisingSchema = new mongoose.Schema(
   {
-    fundraiserSwish: String,
-    donatorSwish: String,
-    message: String,
-    amount: Number,
+    fundraiserSwish: { type: String, unique: true },
+    story: String,
+    goal: Number,
+    email: String,
+    pin: String,
+    expirationDate: Date,
   },
   { autoIndex: false }
 )
 
-const Donation = mongoose.model('Donation', donationSchema)
+const Fundraising = mongoose.model('Fundraising', fundraisingSchema)
 
-exports.addDonation = async (event) => {
-  const {
-    body: { fundraiserSwish, donatorSwish, message, amount },
-  } = event
-
+exports.getRandomFundraising = async () => {
   await getMongoConnection()
 
-  const donation = await new Donation({ fundraiserSwish, donatorSwish, message, amount }).save()
+  const random = await Fundraising.count().exec((error, count) => {
+    return Math.floor(Math.random() * count)
+  })
+
+  const fundraising = await Fundraising.findOne().skip(random)
 
   return {
-    statusCode: 201,
-    body: JSON.stringify(donation),
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify(fundraising),
   }
 }

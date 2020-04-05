@@ -1,4 +1,5 @@
 @host = https://4jof3sttoj.execute-api.eu-west-1.amazonaws.com/prod
+@host = https://max.sousa.cloud
 ###
 
 # @name getRandomFundraising

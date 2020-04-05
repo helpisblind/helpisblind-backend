@@ -36,20 +36,21 @@ class AppStack extends cdk.Stack {
 
     // =======================================================================
     // BEGIN ROUTE53 DEFINITIONS
-    // const CERTIFICATE_ARN =
-    //   'arn:aws:acm:eu-west-1:072324662457:certificate/c70f1fda-b927-49b7-8fc6-60e2f7b8c53a'
 
-    // const certificate = certificatemanager.Certificate.fromCertificateArn(
-    //   this,
-    //   'Certificate',
-    //   CERTIFICATE_ARN
-    // )
+    const certificate = certificatemanager.Certificate.fromCertificateArn(
+      this,
+      'Certificate',
+      // 'arn:aws:acm:eu-west-1:072324662457:certificate/c70f1fda-b927-49b7-8fc6-60e2f7b8c53a'
+      'arn:aws:acm:eu-west-1:072324662457:certificate/1f12f649-a59e-47ad-8cb0-7d4d78b0b4a4'
+    )
 
-    // const domain = new apigateway.DomainName(this, 'domain', {
-    //   certificate,
-    //   domainName: 'api.helpisblind.se',
-    //   mapping: api,
-    // })
+    const domain = new apigateway.DomainName(this, 'domain', {
+      certificate,
+      // domainName: 'api.helpisblind.se',
+      domainName: 'max.sousa.cloud',
+      mapping: api,
+      securityPolicy: apigateway.SecurityPolicy.TLS_1_2,
+    })
 
     // const hostedZone = route53.HostedZone.fromLookup(this, 'hostedZone', {
     //   domainName: 'helpisblind.se',
@@ -68,13 +69,13 @@ class AppStack extends cdk.Stack {
     const addFundraising = new Lambda(this, 'addFundraising', {
       mongoSecret,
       mongoSecretName: MONGO_SECRET_NAME,
-      code: './src/fundraising/add',
+      code: './src/lambdas/fundraising/add',
     })
 
     const getRandomFundraising = new Lambda(this, 'getRandomFundraising', {
       mongoSecret,
       mongoSecretName: MONGO_SECRET_NAME,
-      code: './src/fundraising/getRandom',
+      code: './src/lambdas/fundraising/getRandom',
     })
 
     const fundraising = api.root.addResource('fundraisings')
@@ -88,7 +89,7 @@ class AppStack extends cdk.Stack {
     const addDonation = new Lambda(this, 'addDonation', {
       mongoSecret,
       mongoSecretName: MONGO_SECRET_NAME,
-      code: './src/donation/add',
+      code: './src/lambdas/donation/add',
     })
 
     const donations = api.root.addResource('donations')
@@ -97,7 +98,7 @@ class AppStack extends cdk.Stack {
     const getDonationById = new Lambda(this, 'getDonationById', {
       mongoSecret,
       mongoSecretName: MONGO_SECRET_NAME,
-      code: './src/donation/getById',
+      code: './src/lambdas/donation/getById',
     })
 
     const donation = donations.addResource('{id}')

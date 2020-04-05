@@ -40,46 +40,39 @@ const getMongoConnection = async () => {
       console.error(error)
       return {
         statusCode: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
       }
     }
   }
 }
 
-const fundraisingSchema = new mongoose.Schema(
+const donationSchema = new mongoose.Schema(
   {
-    fundraiserSwish: { type: String, unique: true },
-    story: String,
-    goal: Number,
-    email: String,
-    pin: String,
-    expirationDate: Date,
+    fundraiserSwish: String,
+    donatorSwish: String,
+    message: String,
+    amount: Number,
   },
   { autoIndex: false }
 )
 
-const Fundraising = mongoose.model('Fundraising', fundraisingSchema)
+const Donation = mongoose.model('Donation', donationSchema)
 
-exports.addFundraising = async (event) => {
-  const {
-    body: { fundraiserSwish, story, goal, email, pin },
-  } = event
+exports.addDonation = async (event) => {
+  const { fundraiserSwish, donatorSwish, message, amount } = JSON.parse(event.body)
 
   await getMongoConnection()
 
-  const now = new Date()
-  const expirationDate = new Date(now.setMonth(now.getMonth() + 1))
-
-  const fundraising = await new Fundraising({
-    fundraiserSwish,
-    story,
-    goal,
-    email,
-    pin,
-    expirationDate,
-  }).save()
+  const donation = await Donation.create({ fundraiserSwish, donatorSwish, message, amount })
 
   return {
     statusCode: 201,
-    body: JSON.stringify(fundraising),
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify(donation),
   }
 }
