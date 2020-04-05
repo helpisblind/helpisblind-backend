@@ -28,7 +28,7 @@ class AppStack extends cdk.Stack {
     })
 
     const hostBucket = new s3.Bucket(this, 'hostBucket', {
-      bucketName: 'helpisblind-host',
+      bucketName: 'www.helpisblind.se',
       websiteIndexDocument: 'index.html',
       websiteErrorDocument: 'index.html',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -53,28 +53,13 @@ class AppStack extends cdk.Stack {
       'arn:aws:acm:eu-west-1:072324662457:certificate/c70f1fda-b927-49b7-8fc6-60e2f7b8c53a'
     )
 
-    const apiDomain = new apigateway.DomainName(this, 'domain', {
+    new apigateway.DomainName(this, 'domain', {
       certificate,
       domainName: 'api.helpisblind.se',
       mapping: api,
       securityPolicy: apigateway.SecurityPolicy.TLS_1_2,
     })
 
-    const hostedZone = route53.HostedZone.fromLookup(this, 'hostedZone', {
-      domainName: 'helpisblind.se',
-    })
-
-    new route53.ARecord(this, 'AliasRecord', {
-      zone: hostedZone,
-      target: route53.RecordTarget.fromAlias(new route53Targets.ApiGatewayDomain(apiDomain)),
-      recordName: 'api',
-    })
-
-    new route53.CnameRecord(this, 'CNAMERecord', {
-      zone: hostedZone,
-      recordName: 'app',
-      domainName: hostBucket.bucketWebsiteUrl,
-    })
     // END ROUTE53 DEFINITIONS
     // =======================================================================
 
