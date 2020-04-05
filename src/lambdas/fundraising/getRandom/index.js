@@ -79,7 +79,7 @@ exports.getRandomFundraising = async () => {
 
   await getMongoConnection()
 
-  const fundraising = await Fundraising.aggregate.sample(1).lean()
+  const fundraising = await Fundraising.aggregate().sample(1).lean()
   const donationsAmount = await Donation.find({ fundraisingId: fundraising._id }, 'amount').lean()
 
   const amountRaised = donationsAmount.reduce((totalRaised, donation) => {
