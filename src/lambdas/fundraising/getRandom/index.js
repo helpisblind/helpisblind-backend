@@ -86,9 +86,9 @@ exports.getRandomFundraising = async () => {
   const fundraising = await Fundraising.findOne().skip(random).lean()
   const donationsAmount = await Donation.find({ fundraisingId: fundraising._id }, 'amount').lean()
 
-  const amountRaised = donationsAmount.reduce((totalRaised, nextAmount) => {
-    return totalRaised + nextAmount;
-  });
+  const amountRaised = donationsAmount.reduce((totalRaised, donation) => {
+    return totalRaised + donation.amount
+  })
 
   return {
     statusCode: 200,
