@@ -67,7 +67,6 @@ const fundraisingSchema = new mongoose.Schema(
     story: { type: String, required: '{PATH} is required!' },
     goal: { type: Number, required: '{PATH} is required!' },
     email: { type: String, required: '{PATH} is required!' },
-    pin: { type: String, required: '{PATH} is required!' },
     expirationDate: { type: Date, required: '{PATH} is required!' },
   },
   { autoIndex: false }
