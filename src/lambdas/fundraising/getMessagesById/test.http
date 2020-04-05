@@ -1,4 +1,4 @@
-@host = https://4jof3sttoj.execute-api.eu-west-1.amazonaws.com/prod
+@host = https://api.helpisblind.se
 @fundraisingId = 5e89cb2b2c7f030009e534c5
 ###
 
